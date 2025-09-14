@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 import re
 
-from processors.pdf_processor import BatchPDFProcessor, ExtractedContent
+from processors.pdf_processor import BatchDocumentProcessor, ExtractedContent
 from processors.content_extractor import DocumentIndexer
 from utils.llm_client import get_llm_client, BaseLLMClient
 from utils.config import config
@@ -32,7 +32,7 @@ class DocumentQAAgent:
             documents_path: Path to documents directory
         """
         self.llm_client = get_llm_client(llm_provider)
-        self.pdf_processor = BatchPDFProcessor()
+        self.pdf_processor = BatchDocumentProcessor()
         self.indexer = DocumentIndexer(self.llm_client)
         self.documents_path = documents_path or config.documents_path
         self.conversation_history = []
@@ -46,7 +46,7 @@ class DocumentQAAgent:
     
     def ingest_documents(self, force_reindex: bool = False) -> Dict[str, str]:
         """
-        Ingest and index all PDF documents in the documents directory.
+        Ingest and index all supported documents (PDF and text files) in the documents directory.
         
         Args:
             force_reindex: Whether to force re-indexing of all documents
@@ -57,11 +57,11 @@ class DocumentQAAgent:
         logger.info(f"Starting document ingestion from: {self.documents_path}")
         
         try:
-            # Process all PDFs in the documents directory
+            # Process all supported documents in the documents directory
             extracted_contents = self.pdf_processor.process_directory(self.documents_path)
             
             if not extracted_contents:
-                logger.warning("No PDF documents found to process")
+                logger.warning("No supported documents found to process")
                 return {}
             
             indexed_docs = {}

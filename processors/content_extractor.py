@@ -16,7 +16,7 @@ try:
 except ImportError:
     print("sklearn and numpy not available. Install with: pip install scikit-learn numpy")
 
-from .pdf_processor import ExtractedContent, BatchPDFProcessor
+from .pdf_processor import ExtractedContent, BatchDocumentProcessor
 from utils.config import config
 
 

@@ -52,16 +52,19 @@ def main():
             print(f"❌ Documents directory not found: {agent.documents_path}")
             sys.exit(1)
         
-        pdf_files = [f for f in os.listdir(agent.documents_path) if f.lower().endswith('.pdf')]
+        # Look for both PDF and text files
+        document_files = [f for f in os.listdir(agent.documents_path) 
+                         if f.lower().endswith(('.pdf', '.txt'))]
         
-        if not pdf_files:
-            print(f"⚠️  No PDF files found in: {agent.documents_path}")
-            print("Please add PDF files to the documents directory.")
+        if not document_files:
+            print(f"⚠️  No supported document files found in: {agent.documents_path}")
+            print("Please add PDF or text files to the documents directory.")
             sys.exit(1)
         
-        print(f"📄 Found {len(pdf_files)} PDF files to process:")
-        for pdf_file in pdf_files:
-            print(f"  • {pdf_file}")
+        print(f"📄 Found {len(document_files)} document files to process:")
+        for doc_file in document_files:
+            file_type = "PDF" if doc_file.lower().endswith('.pdf') else "Text"
+            print(f"  • {doc_file} ({file_type})")
         
         # Start ingestion
         print("\n🔄 Starting document ingestion...")

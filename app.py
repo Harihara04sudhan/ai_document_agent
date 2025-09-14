@@ -37,7 +37,14 @@ def initialize_agents():
     """Initialize agents with caching."""
     try:
         document_agent = DocumentQAAgent()
-        arxiv_agent = ArxivAgent(document_agent.llm_client)
+        
+        # Initialize Arxiv agent with proper error handling
+        try:
+            arxiv_agent = ArxivAgent(document_agent.llm_client)
+        except Exception as arxiv_error:
+            st.warning(f"Arxiv agent initialization warning: {arxiv_error}")
+            arxiv_agent = None
+            
         return document_agent, arxiv_agent
     except Exception as e:
         st.error(f"Failed to initialize agents: {e}")
@@ -89,7 +96,7 @@ def render_document_qa_page(agent: DocumentQAAgent, settings: Dict[str, Any]):
                     indexed_docs = agent.ingest_documents()
                     if indexed_docs:
                         st.success(f"✅ Successfully ingested {len(indexed_docs)} documents!")
-                        st.rerun()
+                        st.experimental_rerun()
                     else:
                         st.error("No documents found to ingest.")
                 except Exception as e:
@@ -168,7 +175,7 @@ def process_query(agent: DocumentQAAgent, query: str, query_type: str, settings:
             # Show query type and confidence
             col1, col2 = st.columns(2)
             with col1:
-                st.badge(f"Query Type: {response['query_type']}")
+                st.info(f"🏷️ Query Type: {response['query_type']}")
             with col2:
                 confidence_color = "green" if response['confidence'] > 0.7 else "orange" if response['confidence'] > 0.4 else "red"
                 st.markdown(f"**Confidence:** :{confidence_color}[{response['confidence']:.2f}]")
@@ -233,6 +240,10 @@ def render_arxiv_page(arxiv_agent: ArxivAgent, settings: Dict[str, Any]):
 
 def search_arxiv_papers(arxiv_agent: ArxivAgent, query: str, max_results: int, sort_by: str):
     """Search Arxiv papers and display results."""
+    if not arxiv_agent:
+        st.error("Arxiv agent is not available. Please check the system configuration.")
+        return
+        
     with st.spinner("🔍 Searching Arxiv..."):
         try:
             papers = arxiv_agent.search_papers(
@@ -363,7 +374,7 @@ def render_document_management_page(agent: DocumentQAAgent):
                 try:
                     indexed_docs = agent.ingest_documents(force_reindex=True)
                     st.success(f"✅ Re-indexed {len(indexed_docs)} documents!")
-                    st.rerun()
+                    st.experimental_rerun()
                 except Exception as e:
                     st.error(f"Re-indexing failed: {e}")
     

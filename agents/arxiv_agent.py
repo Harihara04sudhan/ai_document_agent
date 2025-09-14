@@ -14,6 +14,8 @@ try:
     import requests
 except ImportError:
     print("arxiv library not available. Install with: pip install arxiv")
+    arxiv = None
+    requests = None
 
 from utils.config import config
 from utils.llm_client import BaseLLMClient

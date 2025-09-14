@@ -42,7 +42,7 @@ class PDFProcessor:
     """Advanced PDF processor with multi-modal extraction capabilities."""
     
     def __init__(self):
-        self.supported_formats = ['.pdf']
+        self.supported_formats = ['.pdf', '.txt']
         
     def process_pdf(self, pdf_path: str) -> ExtractedContent:
         """
@@ -285,19 +285,87 @@ class PDFProcessor:
             logger.error(f"Error extracting metadata: {e}")
             return {}
 
+    def process_text_file(self, text_path: str) -> ExtractedContent:
+        """
+        Process a text file and extract structured content.
+        
+        Args:
+            text_path: Path to the text file
+            
+        Returns:
+            ExtractedContent object with extracted information
+        """
+        if not os.path.exists(text_path):
+            raise FileNotFoundError(f"Text file not found: {text_path}")
+        
+        logger.info(f"Processing text file: {text_path}")
+        
+        try:
+            # Read text content
+            with open(text_path, 'r', encoding='utf-8') as file:
+                text_content = file.read()
+            
+            # Parse academic structure
+            structure = self._parse_academic_structure(text_content)
+            
+            # Extract equations
+            equations = self._extract_equations(text_content)
+            
+            # Create ExtractedContent object
+            return ExtractedContent(
+                text=text_content,
+                title=structure.get('title'),
+                authors=structure.get('authors', []),
+                abstract=structure.get('abstract'),
+                sections=structure.get('sections', []),
+                tables=[],  # Text files don't have complex tables
+                figures=[],  # Text files don't have figures
+                references=structure.get('references', []),
+                equations=equations,
+                metadata={
+                    'file_path': text_path,
+                    'file_type': 'text',
+                    'file_size': os.path.getsize(text_path),
+                    'word_count': len(text_content.split())
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Error processing text file {text_path}: {e}")
+            raise
 
-class BatchPDFProcessor:
-    """Process multiple PDFs in batch."""
+    def process_document(self, file_path: str) -> ExtractedContent:
+        """
+        Process a document (PDF or text) and extract content.
+        
+        Args:
+            file_path: Path to the document file
+            
+        Returns:
+            ExtractedContent object with extracted information
+        """
+        file_ext = Path(file_path).suffix.lower()
+        
+        if file_ext == '.pdf':
+            return self.process_pdf(file_path)
+        elif file_ext == '.txt':
+            return self.process_text_file(file_path)
+        else:
+            raise ValueError(f"Unsupported file format: {file_ext}")
+
+
+class BatchDocumentProcessor:
+    """Process multiple documents (PDFs and text files) in batch."""
     
     def __init__(self):
         self.processor = PDFProcessor()
     
     def process_directory(self, directory_path: str) -> Dict[str, ExtractedContent]:
         """
-        Process all PDF files in a directory.
+        Process all supported document files in a directory.
         
         Args:
-            directory_path: Path to directory containing PDFs
+            directory_path: Path to directory containing documents
             
         Returns:
             Dictionary mapping file names to extracted content
@@ -306,19 +374,21 @@ class BatchPDFProcessor:
             raise FileNotFoundError(f"Directory not found: {directory_path}")
         
         results = {}
-        pdf_files = [f for f in os.listdir(directory_path) if f.lower().endswith('.pdf')]
+        # Look for both PDF and text files
+        all_files = os.listdir(directory_path)
+        supported_files = [f for f in all_files if any(f.lower().endswith(ext) for ext in ['.pdf', '.txt'])]
         
-        logger.info(f"Found {len(pdf_files)} PDF files to process")
+        logger.info(f"Found {len(supported_files)} supported files to process")
         
-        for pdf_file in pdf_files:
-            pdf_path = os.path.join(directory_path, pdf_file)
+        for file_name in supported_files:
+            file_path = os.path.join(directory_path, file_name)
             try:
-                logger.info(f"Processing: {pdf_file}")
-                content = self.processor.process_pdf(pdf_path)
-                results[pdf_file] = content
-                logger.info(f"Successfully processed: {pdf_file}")
+                logger.info(f"Processing: {file_name}")
+                content = self.processor.process_document(file_path)
+                results[file_name] = content
+                logger.info(f"Successfully processed: {file_name}")
             except Exception as e:
-                logger.error(f"Failed to process {pdf_file}: {e}")
+                logger.error(f"Failed to process {file_name}: {e}")
                 continue
         
         return results
