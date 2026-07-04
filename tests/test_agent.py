@@ -84,7 +84,7 @@ class TestPDFProcessor:
     
     def test_processor_initialization(self):
         """Test processor initialization."""
-        assert self.processor.supported_formats == ['.pdf']
+        assert self.processor.supported_formats == ['.pdf', '.txt']
     
     def test_academic_structure_parsing(self):
         """Test academic paper structure parsing."""

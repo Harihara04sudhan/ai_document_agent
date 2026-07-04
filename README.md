@@ -1,151 +1,137 @@
-# Enterprise AI Document Q&A Agent
+# 📄 AI Document Agent
 
-## Overview
-A lightweight AI agent that processes PDF documents and provides intelligent Q&A capabilities using Google Gemini API. The system features multi-modal content extraction, enterprise-grade optimizations, and Arxiv API integration.
+**Ask questions to your PDFs.** A multi-agent RAG system that ingests research papers and technical documents, extracts text / tables / figures / equations, and answers questions with source-grounded responses — powered by Google Gemini.
 
-## Features
-- ✅ Multi-PDF document ingestion pipeline
-- ✅ Multi-modal content extraction (text, tables, figures, equations)
-- ✅ Intelligent Q&A interface with multiple query types
-- ✅ Context-aware responses with enterprise optimizations
-- ✅ Arxiv API integration for paper lookup (bonus feature)
-- ✅ Secure API key management
-- ✅ Comprehensive error handling and logging
+[![CI](https://github.com/Harihara04sudhan/ai_document_agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Harihara04sudhan/ai_document_agent/actions/workflows/ci.yml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-## Setup Instructions
+```text
+❓  "What accuracy and F1-score are reported in the transformer paper?"
 
-### Prerequisites
-- Python 3.8+
-- Google Gemini API key
+🤖  The paper reports 94.2% accuracy and an F1-score of 0.91 on the
+    evaluation set (Section 5.2, Table 3).
+    Sources: transformer_nlp_paper.pdf · chunk 14, 15
+```
 
-### Installation
+## ✨ Why this project?
 
-1. **Clone the repository**
+Most "chat with your PDF" demos stop at naive text splitting. This one doesn't:
+
+- 🧠 **Multi-modal extraction** — pulls text, tables, figure captions, equations, and references out of PDFs (PyMuPDF + pdfplumber), not just raw text
+- 🔍 **True semantic retrieval** — Gemini `embedding-001` vectors + cosine similarity over structure-preserving chunks; no separate vector DB to run
+- 🤖 **Multi-agent design** — a Document Q&A agent for your local corpus and an ArXiv agent that fetches related papers on demand
+- 💬 **Three query modes** — direct lookup, summarization, and metric/result extraction
+- 🖥️ **Three interfaces** — CLI, interactive REPL, and a Streamlit web UI
+- 🛡️ **Production hygiene** — env-based secrets, caching, rate limiting, structured logging, graceful error handling
+
+## 🚀 Quickstart
+
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Harihara04sudhan/ai_document_agent.git
 cd ai_document_agent
-```
-
-2. **Create virtual environment**
-```bash
-python -m venv ai_document_agent_venv
-source ai_document_agent_venv/bin/activate  # On Windows: ai_document_agent_venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+
+cp .env.example .env      # then add your GEMINI_API_KEY
 ```
 
-4. **Set up environment variables**
-Create a `.env` file in the project root:
-```
-GEMINI_API_KEY=your_gemini_api_key_here
-```
+Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com/apikey).
 
-5. **Run the application**
 ```bash
-python main.py
-```
-
-## Usage
-
-### Document Ingestion
-Place PDF files in the `documents/` folder and run:
-```python
+# 1. Drop PDFs into documents/, then build the index
 python ingest_documents.py
+
+# 2. Ask away
+python main.py --query "Summarize the methodology of the medical AI paper"
+
+# ...or chat interactively
+python main.py --interactive
+
+# ...or use the web UI
+streamlit run app.py
 ```
 
-### Query Interface
-The system supports three types of queries:
+Sample documents are included in `documents/` so you can try it immediately.
 
-1. **Direct Content Lookup**
-   - "What is the conclusion of Paper X?"
-   - "What are the main findings in document Y?"
+## 🏗️ Architecture
 
-2. **Summarization**
-   - "Summarize the methodology of Paper C"
-   - "Give me a summary of the key insights"
-
-3. **Evaluation Results Extraction**
-   - "What are the accuracy and F1-score reported in Paper D?"
-   - "Extract the performance metrics from the results section"
-
-### Arxiv Integration (Bonus Feature)
-The agent can look up papers from Arxiv:
-- "Find papers about transformer architectures"
-- "Look up recent papers on neural networks"
-
-## Architecture
-
-```
-ai_document_agent/
-├── main.py                 # Main application entry point
-├── agents/
-│   ├── __init__.py
-│   ├── document_agent.py   # Core AI agent logic
-│   └── arxiv_agent.py     # Arxiv API integration
-├── processors/
-│   ├── __init__.py
-│   ├── pdf_processor.py   # PDF processing and extraction
-│   └── content_extractor.py # Multi-modal content extraction
-├── utils/
-│   ├── __init__.py
-│   ├── llm_client.py      # LLM API clients
-│   └── config.py          # Configuration management
-├── documents/             # Input PDF documents
-├── data/                 # Processed document data
-├── tests/                # Unit tests
-├── requirements.txt      # Python dependencies
-└── .env.example         # Environment variables template
+```mermaid
+flowchart LR
+    A[📄 PDFs] --> B[PDF Processor<br/>PyMuPDF · pdfplumber]
+    B --> C[Content Extractor<br/>text · tables · figures · equations]
+    C --> D[Chunker<br/>structure-preserving]
+    D --> E[(Embedding index<br/>Gemini embedding-001)]
+    Q[❓ User query] --> F{Router}
+    F -->|local corpus| G[Document Q&A Agent]
+    F -->|paper lookup| H[ArXiv Agent]
+    E --> G
+    G --> I[Gemini LLM]
+    H --> I
+    I --> R[✅ Grounded answer<br/>+ sources]
 ```
 
-## Technical Implementation
+| Component | File | Role |
+|---|---|---|
+| Document Q&A Agent | `agents/document_agent.py` | Retrieval, context assembly, answer generation |
+| ArXiv Agent | `agents/arxiv_agent.py` | Live paper search & metadata retrieval |
+| PDF Processor | `processors/pdf_processor.py` | Multi-library PDF parsing with fallbacks |
+| Content Extractor | `processors/content_extractor.py` | Chunking + embedding index & semantic search |
+| LLM Client | `utils/llm_client.py` | Gemini API wrapper with retry/rate-limit |
+| Config | `utils/config.py` | Typed, env-driven configuration |
 
-### Document Processing Pipeline
-1. **PDF Ingestion**: Handles multiple PDF files simultaneously
-2. **Content Extraction**: Uses multi-modal LLMs to extract:
-   - Text content with structure preservation
-   - Tables and their relationships
-   - Figures and their captions
-   - Mathematical equations
-   - References and citations
-3. **Indexing**: Creates searchable embeddings for efficient retrieval
+## 🧰 CLI reference
 
-### Enterprise Features
-- **Context Management**: Maintains conversation context across queries
-- **Response Optimization**: Caches frequently accessed content
-- **Error Handling**: Comprehensive error handling with graceful degradation
-- **Security**: Secure API key management and input validation
-- **Logging**: Detailed logging for monitoring and debugging
+| Command | What it does |
+|---|---|
+| `python main.py --ingest` | (Re)build the vector index from `documents/` |
+| `python main.py --query "..."` | One-shot question |
+| `python main.py --interactive` | Chat REPL with conversation context |
+| `python main.py --arxiv "..."` | Search ArXiv for papers |
+| `python main.py --health` | Check API keys, index, and dependencies |
+| `python main.py --stats` | Corpus statistics |
+| `python main.py --force-reindex` | Rebuild index from scratch |
 
-### API Integration
-- **Google Gemini**: Primary LLM for text processing and Q&A with advanced multimodal capabilities
-- **Arxiv API**: Research paper lookup and retrieval
+## ⚙️ Configuration
 
-## Testing
-Run the test suite:
+Everything is tunable via `.env` (see `.env.example`):
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | — | **Required.** Your Gemini API key |
+| `GEMINI_MODEL` | `gemini-1.5-flash` | Model used for answers |
+| `CHUNK_SIZE` / `CHUNK_OVERLAP` | `800` / `200` | Retrieval granularity |
+| `TEMPERATURE` | `0.3` | Answer creativity |
+| `MAX_TOKENS` | `2048` | Response length cap |
+
+## 🧪 Tests
+
 ```bash
-python -m pytest tests/
+pytest tests/ -v
 ```
 
-## Performance Considerations
-- Efficient caching mechanisms
-- Parallel document processing
-- Optimized embedding storage
-- Rate limiting for API calls
+CI runs the suite plus `ruff` lint on every push (see badge above).
 
-## Security Features
-- Environment-based API key management
-- Input sanitization and validation
-- Secure file handling
+## 🗺️ Roadmap
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+- [ ] OpenAI / Anthropic / local-model (Ollama) providers behind the same `LLMClient` interface
+- [ ] Dense embedding retrieval (FAISS) with optional cross-encoder reranking
+- [ ] Citation highlighting in the Streamlit UI
+- [ ] Docker image + one-command deploy
+- [ ] Evaluation harness (RAGAS) with benchmark scores in CI
 
-## License
-This project is licensed under the MIT License.
+Want one of these? PRs are very welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, style (ruff), and how to propose changes. Good first issues are labeled [`good first issue`](https://github.com/Harihara04sudhan/ai_document_agent/labels/good%20first%20issue).
+
+## 📜 License
+
+[MIT](LICENSE) © Harihara Sudhan R
+
+---
+
+⭐ **If this project helped you, a star helps others find it.**

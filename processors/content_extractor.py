@@ -11,10 +11,8 @@ from pathlib import Path
 
 try:
     import numpy as np
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.metrics.pairwise import cosine_similarity
 except ImportError:
-    print("sklearn and numpy not available. Install with: pip install scikit-learn numpy")
+    print("numpy not available. Install with: pip install numpy")
 
 from .pdf_processor import ExtractedContent, BatchDocumentProcessor
 from utils.config import config
