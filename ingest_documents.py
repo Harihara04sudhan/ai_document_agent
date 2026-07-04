@@ -76,12 +76,12 @@ def main():
             # Show statistics
             stats = agent.get_document_statistics()
             
-            print(f"\n📊 Statistics:")
+            print("\n📊 Statistics:")
             print(f"  Total documents: {stats['total_documents']}")
             print(f"  Total text chunks: {stats['total_chunks']}")
             print(f"  Total sections: {stats['total_sections']}")
             
-            print(f"\n📑 Document details:")
+            print("\n📑 Document details:")
             for doc in stats['documents']:
                 print(f"\n  📄 {doc['title'] or 'Unknown Title'}")
                 print(f"     File: {os.path.basename(doc['file_path'])}")
@@ -93,7 +93,7 @@ def main():
                 if doc['authors']:
                     print(f"     Authors: {', '.join(doc['authors'][:3])}")
             
-            print(f"\n🎯 Ready for queries! Use: python main.py --interactive")
+            print("\n🎯 Ready for queries! Use: python main.py --interactive")
         
         else:
             print("❌ No documents were successfully ingested.")

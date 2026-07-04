@@ -6,9 +6,7 @@ Streamlit web interface for the AI Document Agent.
 import streamlit as st
 import os
 import sys
-import json
-from datetime import datetime
-from typing import List, Dict, Any
+from typing import Dict, Any
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -272,7 +270,7 @@ def search_arxiv_papers(arxiv_agent: ArxivAgent, query: str, max_results: int, s
                             st.link_button("📄 PDF", paper['pdf_url'])
                             st.link_button("🔗 Arxiv", paper['entry_url'])
                             
-                            if st.button(f"📋 Summarize", key=f"summarize_{i}"):
+                            if st.button("📋 Summarize", key=f"summarize_{i}"):
                                 summarize_paper(arxiv_agent, paper['arxiv_id'])
             else:
                 st.warning("No papers found for your query.")

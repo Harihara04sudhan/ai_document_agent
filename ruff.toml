@@ -3,8 +3,3 @@ target-version = "py310"
 
 [lint]
 select = ["E9", "F"]
-ignore = [
-    "F401",  # unused imports — cleanup tracked as good first issue
-    "F541",  # f-strings without placeholders
-    "F841",  # unused local variables
-]

@@ -23,10 +23,36 @@ class Config:
     @property
     def default_llm_provider(self) -> str:
         return os.getenv("DEFAULT_LLM_PROVIDER", "gemini")
-    
+
     @property
     def gemini_model(self) -> str:
         return os.getenv("GEMINI_MODEL", "gemini-pro")
+
+    # OpenAI (and OpenAI-compatible endpoints)
+    @property
+    def openai_api_key(self) -> str:
+        return os.getenv("OPENAI_API_KEY", "")
+
+    @property
+    def openai_model(self) -> str:
+        return os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    @property
+    def openai_base_url(self) -> str:
+        return os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
+    # Ollama (local models)
+    @property
+    def ollama_host(self) -> str:
+        return os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+    @property
+    def ollama_model(self) -> str:
+        return os.getenv("OLLAMA_MODEL", "llama3.2")
+
+    @property
+    def ollama_embedding_model(self) -> str:
+        return os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
     
     # LLM Parameters
     @property
@@ -73,12 +99,20 @@ class Config:
         return int(os.getenv("ARXIV_MAX_RESULTS", "10"))
     
     def _validate_config(self) -> None:
-        """Validate critical configuration settings."""
-        if not self.gemini_api_key:
-            raise ValueError("GEMINI_API_KEY must be set")
-        
-        if self.default_llm_provider != "gemini":
-            raise ValueError("Only Gemini provider is supported in this configuration")
+        """Validate critical configuration settings for the active provider."""
+        provider = self.default_llm_provider
+
+        if provider == "gemini" and not self.gemini_api_key:
+            raise ValueError("GEMINI_API_KEY must be set when DEFAULT_LLM_PROVIDER=gemini")
+
+        if provider == "openai" and not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY must be set when DEFAULT_LLM_PROVIDER=openai")
+
+        if provider not in ("gemini", "openai", "ollama"):
+            raise ValueError(
+                f"Unsupported DEFAULT_LLM_PROVIDER: {provider}. "
+                "Supported: gemini, openai, ollama"
+            )
     
     def get_all_settings(self) -> Dict[str, Any]:
         """Get all configuration settings as a dictionary."""

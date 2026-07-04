@@ -7,14 +7,13 @@ import os
 import json
 from typing import List, Dict, Any, Optional
 import re
-from pathlib import Path
 
 try:
     import numpy as np
 except ImportError:
     print("numpy not available. Install with: pip install numpy")
 
-from .pdf_processor import ExtractedContent, BatchDocumentProcessor
+from .pdf_processor import ExtractedContent
 from utils.config import config
 
 

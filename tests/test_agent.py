@@ -5,7 +5,6 @@ Test suite for the AI Document Agent.
 import pytest
 import os
 import tempfile
-import json
 from unittest.mock import Mock, patch
 
 import sys
@@ -13,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.config import Config
 from processors.pdf_processor import PDFProcessor, ExtractedContent
-from processors.content_extractor import ContentChunker, DocumentIndexer
+from processors.content_extractor import ContentChunker
 from agents.document_agent import DocumentQAAgent
 
 
@@ -69,10 +68,9 @@ class TestContentChunker:
         chunks = chunker.chunk_text(text, preserve_structure=False)
         
         if len(chunks) > 1:
-            # Check that there's overlap between consecutive chunks
-            first_chunk_end = chunks[0]['text'][-10:]
-            second_chunk_start = chunks[1]['text'][:10]
-            # Some overlap should exist
+            # Consecutive chunks should overlap: the end of one chunk
+            # should reappear at the start of the next
+            assert chunks[0]['text'][-5:] in chunks[1]['text']
 
 
 class TestPDFProcessor:
@@ -199,7 +197,7 @@ class TestIntegration:
                 agent = DocumentQAAgent(documents_path=temp_dir)
                 
                 # Index the mock content
-                doc_id = agent.indexer.index_document("test.pdf", mock_content)
+                agent.indexer.index_document("test.pdf", mock_content)
                 
                 # Test querying
                 response = agent.query("What is this document about?")

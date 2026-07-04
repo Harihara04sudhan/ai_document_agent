@@ -6,7 +6,6 @@ Demo script showing the capabilities of the AI Document Agent.
 import os
 import sys
 import time
-from typing import List, Dict, Any
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

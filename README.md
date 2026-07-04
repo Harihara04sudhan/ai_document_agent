@@ -116,7 +116,7 @@ CI runs the suite plus `ruff` lint on every push (see badge above).
 
 ## 🗺️ Roadmap
 
-- [ ] OpenAI / Anthropic / local-model (Ollama) providers behind the same `LLMClient` interface
+- [x] OpenAI and local-model (Ollama) providers behind the same `LLMClient` interface
 - [ ] Dense embedding retrieval (FAISS) with optional cross-encoder reranking
 - [ ] Citation highlighting in the Streamlit UI
 - [ ] Docker image + one-command deploy

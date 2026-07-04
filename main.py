@@ -9,8 +9,6 @@ import argparse
 import logging
 import os
 import sys
-from typing import Dict, Any
-import json
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -75,8 +73,8 @@ Examples:
                        help='Show document statistics')
     
     # Configuration arguments
-    parser.add_argument('--llm-provider', choices=['gemini'],
-                       help='LLM provider to use (gemini only)')
+    parser.add_argument('--llm-provider', choices=['gemini', 'openai', 'ollama'],
+                       help='LLM provider to use')
     parser.add_argument('--documents-path', type=str,
                        help='Path to documents directory')
     parser.add_argument('--max-results', type=int, default=5,
@@ -150,7 +148,7 @@ def handle_health_check(document_agent: DocumentQAAgent, arxiv_agent: ArxivAgent
     
     # Document agent health check
     doc_health = document_agent.health_check()
-    print(f"\n📄 Document Agent:")
+    print("\n📄 Document Agent:")
     print(f"  Status: {doc_health['status']}")
     print(f"  LLM Client: {doc_health['llm_client']}")
     print(f"  Indexed Documents: {doc_health['indexed_documents']}")
@@ -158,13 +156,13 @@ def handle_health_check(document_agent: DocumentQAAgent, arxiv_agent: ArxivAgent
     
     # Arxiv agent health check
     arxiv_health = arxiv_agent.health_check()
-    print(f"\n📚 Arxiv Agent:")
+    print("\n📚 Arxiv Agent:")
     print(f"  Status: {arxiv_health['status']}")
     print(f"  Arxiv API: {arxiv_health['arxiv_api']}")
     print(f"  LLM Available: {arxiv_health['llm_client_available']}")
     
     # Configuration info
-    print(f"\n⚙️  Configuration:")
+    print("\n⚙️  Configuration:")
     settings = config.get_all_settings()
     for key, value in settings.items():
         if 'key' not in key.lower():  # Don't show API keys
@@ -202,7 +200,7 @@ def handle_statistics(document_agent: DocumentQAAgent):
         print(f"Total Sections: {stats['total_sections']}")
         
         if stats['documents']:
-            print(f"\n📑 Document Details:")
+            print("\n📑 Document Details:")
             for doc in stats['documents']:
                 print(f"\n  Document: {doc['title']}")
                 print(f"    File: {os.path.basename(doc['file_path'])}")
@@ -312,7 +310,7 @@ def handle_interactive_mode(document_agent: DocumentQAAgent, arxiv_agent: ArxivA
             print(response['answer'])
             
             if response['sources']:
-                print(f"\n📚 Top sources:")
+                print("\n📚 Top sources:")
                 for i, source in enumerate(response['sources'][:2], 1):
                     print(f"  {i}. {source['document']} (similarity: {source['similarity']:.3f})")
             

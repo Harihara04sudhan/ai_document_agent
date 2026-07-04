@@ -5,7 +5,7 @@ Arxiv API integration for paper lookup and retrieval (Bonus Feature).
 import logging
 import os
 import json
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from datetime import datetime
 import re
 

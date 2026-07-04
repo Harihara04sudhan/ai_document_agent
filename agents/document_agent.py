@@ -4,14 +4,12 @@ Core AI Document Q&A Agent implementation.
 
 import logging
 import os
-import json
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any
 from datetime import datetime
-import re
 
-from processors.pdf_processor import BatchDocumentProcessor, ExtractedContent
+from processors.pdf_processor import BatchDocumentProcessor
 from processors.content_extractor import DocumentIndexer
-from utils.llm_client import get_llm_client, BaseLLMClient
+from utils.llm_client import get_llm_client
 from utils.config import config
 
 
