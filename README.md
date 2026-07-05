@@ -1,6 +1,6 @@
 # 📄 AI Document Agent
 
-**Ask questions to your PDFs.** A multi-agent RAG system that ingests research papers and technical documents, extracts text / tables / figures / equations, and answers questions with source-grounded responses — powered by Google Gemini.
+**Ask questions to your PDFs.** A multi-agent RAG system that ingests research papers and technical documents, extracts text / tables / figures / equations, and answers questions with source-grounded responses — powered by Google Gemini, OpenAI, or a fully local Ollama model.
 
 [![CI](https://github.com/Harihara04sudhan/ai_document_agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Harihara04sudhan/ai_document_agent/actions/workflows/ci.yml)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
@@ -25,7 +25,8 @@ Most "chat with your PDF" demos stop at naive text splitting. This one doesn't:
 - 🤖 **Multi-agent design** — a Document Q&A agent for your local corpus and an ArXiv agent that fetches related papers on demand
 - 💬 **Three query modes** — direct lookup, summarization, and metric/result extraction
 - 🖥️ **Three interfaces** — CLI, interactive REPL, and a Streamlit web UI
-- 🛡️ **Production hygiene** — env-based secrets, caching, rate limiting, structured logging, graceful error handling
+- 🔌 **Pluggable LLM providers** — Google Gemini, OpenAI (or any OpenAI-compatible endpoint), and local Ollama behind one interface
+- 🛡️ **Production hygiene** — env-based secrets, caching, structured logging, graceful error handling
 
 ## 🚀 Quickstart
 
@@ -79,7 +80,7 @@ flowchart LR
 | ArXiv Agent | `agents/arxiv_agent.py` | Live paper search & metadata retrieval |
 | PDF Processor | `processors/pdf_processor.py` | Multi-library PDF parsing with fallbacks |
 | Content Extractor | `processors/content_extractor.py` | Chunking + embedding index & semantic search |
-| LLM Client | `utils/llm_client.py` | Gemini API wrapper with retry/rate-limit |
+| LLM Client | `utils/llm_client.py` | Gemini / OpenAI / Ollama clients behind one interface |
 | Config | `utils/config.py` | Typed, env-driven configuration |
 
 ## 🧰 CLI reference
@@ -100,8 +101,11 @@ Everything is tunable via `.env` (see `.env.example`):
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `GEMINI_API_KEY` | — | **Required.** Your Gemini API key |
+| `DEFAULT_LLM_PROVIDER` | `gemini` | `gemini`, `openai`, or `ollama` |
+| `GEMINI_API_KEY` | — | **Required for Gemini.** Your Gemini API key |
 | `GEMINI_MODEL` | `gemini-1.5-flash` | Model used for answers |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` / `OPENAI_BASE_URL` | — | OpenAI (or compatible) provider settings |
+| `OLLAMA_HOST` / `OLLAMA_MODEL` | `localhost:11434` / `llama3.2` | Local Ollama provider settings |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `800` / `200` | Retrieval granularity |
 | `TEMPERATURE` | `0.3` | Answer creativity |
 | `MAX_TOKENS` | `2048` | Response length cap |

@@ -36,7 +36,7 @@ class BaseLLMClient(ABC):
 class GeminiClient(BaseLLMClient):
     """Google Gemini API client."""
     
-    def __init__(self, api_key: str, model: str = "gemini-pro"):
+    def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
         if not genai:
             raise ImportError("Google GenerativeAI library not installed. Install with: pip install google-generativeai")
         

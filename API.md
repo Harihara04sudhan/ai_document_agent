@@ -14,7 +14,7 @@ The main agent class for document Q&A functionality.
 from agents.document_agent import DocumentQAAgent
 
 agent = DocumentQAAgent(
-    llm_provider="gemini",  # Only Gemini is supported
+    llm_provider="gemini",  # 'gemini', 'openai', or 'ollama'
     documents_path="./documents"
 )
 ```
@@ -220,12 +220,20 @@ class ExtractedContent:
 ```bash
 # API Configuration
 GEMINI_API_KEY=your_gemini_api_key
-DEFAULT_LLM_PROVIDER=gemini
+DEFAULT_LLM_PROVIDER=gemini   # gemini | openai | ollama
 
 # Model Settings
 GEMINI_MODEL=gemini-1.5-flash
 MAX_TOKENS=2048
 TEMPERATURE=0.3
+
+# Alternative providers (used when DEFAULT_LLM_PROVIDER is set accordingly)
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://api.openai.com/v1
+OLLAMA_HOST=http://localhost:11434
+OLLAMA_MODEL=llama3.2
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
 
 # Processing Settings
 CHUNK_SIZE=1000
@@ -308,9 +316,9 @@ if papers:
 
 ### Batch Processing Example
 ```python
-from processors.pdf_processor import BatchPDFProcessor
+from processors.pdf_processor import BatchDocumentProcessor
 
-processor = BatchPDFProcessor()
+processor = BatchDocumentProcessor()
 contents = processor.process_directory("./documents")
 
 for filename, content in contents.items():

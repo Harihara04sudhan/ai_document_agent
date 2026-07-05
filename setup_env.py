@@ -69,12 +69,10 @@ def setup_virtual_environment():
     if not run_command("python -m venv ai_document_agent_venv", "Virtual environment creation"):
         return False
     
-    # Activate and upgrade pip
+    # Upgrade pip inside the new environment
     if os.name == 'nt':  # Windows
-        activate_cmd = ".\\ai_document_agent_venv\\Scripts\\activate"
         pip_cmd = ".\\ai_document_agent_venv\\Scripts\\pip"
     else:  # Unix/Linux/MacOS
-        activate_cmd = "source ai_document_agent_venv/bin/activate"
         pip_cmd = "./ai_document_agent_venv/bin/pip"
     
     if not run_command(f"{pip_cmd} install --upgrade pip", "Pip upgrade"):

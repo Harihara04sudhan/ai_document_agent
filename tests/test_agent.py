@@ -121,8 +121,9 @@ class TestDocumentAgent:
     
     def setup_method(self):
         """Set up test fixtures."""
-        # Mock the LLM client to avoid API calls in tests
-        with patch('utils.llm_client.get_llm_client') as mock_client:
+        # Mock the LLM client to avoid API calls in tests.
+        # Patch where the name is looked up (agents.document_agent), not where it is defined.
+        with patch('agents.document_agent.get_llm_client') as mock_client:
             mock_llm = Mock()
             mock_llm.generate_response.return_value = "This is a test response."
             mock_llm.generate_embeddings.return_value = [0.1] * 768
@@ -186,8 +187,8 @@ class TestIntegration:
                 metadata={"pages": 10}
             )
             
-            # Mock the LLM client
-            with patch('utils.llm_client.get_llm_client') as mock_client:
+            # Mock the LLM client (patch the name used by DocumentQAAgent)
+            with patch('agents.document_agent.get_llm_client') as mock_client:
                 mock_llm = Mock()
                 mock_llm.generate_response.return_value = "This is a comprehensive answer based on the document content."
                 mock_llm.generate_embeddings.return_value = [0.1] * 768

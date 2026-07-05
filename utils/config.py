@@ -13,7 +13,12 @@ class Config:
     
     def __init__(self):
         load_dotenv()
-        self._validate_config()
+        # Note: validation is intentionally NOT run here. This module is
+        # imported at package-import time, and raising here would crash any
+        # import (including test collection and `--help`) before entry points
+        # can show a friendly error. Entry points call `_validate_config()`
+        # explicitly, and LLMClientFactory re-checks credentials on client
+        # creation.
     
     # API Configuration
     @property
@@ -26,7 +31,7 @@ class Config:
 
     @property
     def gemini_model(self) -> str:
-        return os.getenv("GEMINI_MODEL", "gemini-pro")
+        return os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
     # OpenAI (and OpenAI-compatible endpoints)
     @property
